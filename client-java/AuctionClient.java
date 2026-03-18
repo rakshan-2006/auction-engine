@@ -35,6 +35,19 @@ public class AuctionClient {
         System.out.println("Enter bidder name:");
         String name = input.readLine();
 
+        Thread listenerThread = new Thread(() -> {
+            try {
+                String response;
+                while ((response = server.readLine()) != null) {
+                    System.out.println("Server: " + response);
+                }
+            } catch (IOException e) {
+                System.out.println("Disconnected from server.");
+            }
+        });
+        listenerThread.setDaemon(true);
+        listenerThread.start();
+
         while (true) {
 
             System.out.println("Enter bid amount:");
@@ -42,10 +55,6 @@ public class AuctionClient {
             String bid = input.readLine();
 
             out.println("BID " + name + " " + bid);
-
-            String response = server.readLine();
-
-            System.out.println("Server: " + response);
         }
     }
 }

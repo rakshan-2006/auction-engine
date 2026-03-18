@@ -14,6 +14,16 @@ import (
 var highestBid int = 0
 var highestBidder string = ""
 var mutex sync.Mutex
+var clients = map[net.Conn]bool{}
+
+func broadcast(message string) {
+	for client := range clients {
+		if _, err := client.Write([]byte(message)); err != nil {
+			client.Close()
+			delete(clients, client)
+		}
+	}
+}
 
 func getLocalIPv4Addresses() []string {
 	addresses := []string{}
@@ -60,6 +70,19 @@ func getLocalIPv4Addresses() []string {
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 
+	mutex.Lock()
+	clients[conn] = true
+	if highestBid > 0 {
+		conn.Write([]byte(fmt.Sprintf("CURRENT_HIGHEST %s %d\n", highestBidder, highestBid)))
+	}
+	mutex.Unlock()
+
+	defer func() {
+		mutex.Lock()
+		delete(clients, conn)
+		mutex.Unlock()
+	}()
+
 	reader := bufio.NewReader(conn)
 
 	for {
@@ -70,30 +93,34 @@ func handleConnection(conn net.Conn) {
 
 		message = strings.TrimSpace(message)
 		parts := strings.Split(message, " ")
-
-		if parts[0] == "BID" {
-
-			bidder := parts[1]
-			bidAmount, _ := strconv.Atoi(parts[2])
-
-			mutex.Lock()
-
-			if bidAmount > highestBid {
-
-				highestBid = bidAmount
-				highestBidder = bidder
-
-				response := fmt.Sprintf("NEW_HIGHEST %s %d\n", bidder, bidAmount)
-				conn.Write([]byte(response))
-
-			} else {
-
-				conn.Write([]byte("BID_REJECTED\n"))
-
-			}
-
-			mutex.Unlock()
+		if len(parts) < 3 || parts[0] != "BID" {
+			conn.Write([]byte("INVALID_COMMAND\n"))
+			continue
 		}
+
+		bidder := parts[1]
+		bidAmount, err := strconv.Atoi(parts[2])
+		if err != nil {
+			conn.Write([]byte("INVALID_BID\n"))
+			continue
+		}
+
+		mutex.Lock()
+
+		if bidAmount > highestBid {
+
+			highestBid = bidAmount
+			highestBidder = bidder
+
+			broadcast(fmt.Sprintf("NEW_HIGHEST %s %d\n", bidder, bidAmount))
+
+		} else {
+
+			conn.Write([]byte(fmt.Sprintf("BID_REJECTED HIGHEST %s %d\n", highestBidder, highestBid)))
+
+		}
+
+		mutex.Unlock()
 	}
 }
 
