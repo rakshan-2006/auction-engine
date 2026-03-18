@@ -1,256 +1,133 @@
-# Online Auction Engine (Real-Time Bidding)
+# Auction Engine
 
-## Project Overview
+This repository contains a small auction system built with sockets and TLS.
 
-This project implements a **real-time online auction platform** using **low-level TCP socket programming**.
-Multiple bidders (clients) can connect to a central auction server and place bids on items in real time.
+- Go server accepts bids over TLS on port 8080.
+- Java clients connect, send bids, and receive live highest-bid updates.
+- Python script is a simple manual logger for bid values and timestamps.
 
-The system ensures:
+## What It Does
 
-* **Secure communication using TLS/SSL**
-* **Concurrent client handling**
-* **Fair bidding rules**
-* **Real-time updates of the highest bid**
-* **Performance monitoring**
+The server keeps two global values in memory:
 
-The project demonstrates the use of **network programming, concurrency, protocol design, and secure communication**.
+- current highest bid amount
+- name of the current highest bidder
 
----
+Each client sends lines in this format:
 
-# Technologies Used
-
-### Programming Languages
-
-* **Go** – Auction Server
-* **Java** – Bidder Client
-* **Python** – Monitoring and Analytics
-
-### Networking
-
-* TCP Socket Programming
-* TLS/SSL Secure Communication
-
----
-
-# System Architecture
-
-The system follows a **client-server architecture**.
-
-Java clients connect to the Go server using **TLS-secured TCP sockets**.
-The server processes bids and maintains the current highest bid.
-A Python monitoring script records auction activity.
-
-```
-                +-------------------+
-                |   Java Client 1   |
-                +-------------------+
-                         |
-                +-------------------+
-                |   Java Client 2   |
-                +-------------------+
-                         |
-                         v
-                 +------------------+
-                 |   Go Auction     |
-                 |      Server      |
-                 +------------------+
-                         |
-                         v
-                +-------------------+
-                |  Python Monitor   |
-                |  (Analytics)      |
-                +-------------------+
+```text
+BID <name> <amount>
 ```
 
----
+When a new highest bid arrives, the server broadcasts that update to every connected client.
 
-# Features Implemented
+## Project Layout
 
-* Real-time bidding system
-* Multiple concurrent bidders
-* TLS-secured communication
-* Bid validation and fairness rules
-* Automatic rejection of lower bids
-* Real-time highest bid updates
-* Performance monitoring using Python
-
----
-
-# Project Structure
-
-```
-auction-engine
-│
-├── server-go
-│   └── auction_server.go
-│
-├── client-java
-│   └── AuctionClient.java
-│
-├── analytics-python
-│   └── monitor.py
-│
-├── ssl
-│   ├── server.crt
-│   └── server.key
-│
-└── README.md
+```text
+auction-engine/
+        server-go/
+                auction_server.go
+        client-java/
+                AuctionClient.java
+        analytics-python/
+                monitor.py
+        ssl/
+                server.crt
+                server.key
 ```
 
----
+## Protocol Messages
 
-# How to Run the Project
+Server responses currently used by the code:
 
-## Step 1 – Start the Auction Server
+- NEW_HIGHEST <name> <amount>
+        - Sent to all connected clients when a higher bid is accepted.
+- CURRENT_HIGHEST <name> <amount>
+        - Sent to a client when it connects and a highest bid already exists.
+- BID_REJECTED HIGHEST <name> <amount>
+        - Sent to the bidder when bid is not higher than current highest.
+- INVALID_COMMAND
+        - Sent when incoming line does not match expected BID format.
+- INVALID_BID
+        - Sent when amount is not a valid integer.
 
-Open terminal and run:
+## TLS and Certificates
 
+The server runs with TLS and loads cert files from the ssl folder.
+
+If you need to generate new self-signed files:
+
+```bash
+openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.crt -days 365 -nodes
 ```
+
+Run this command inside the ssl folder so files are created in the expected location.
+
+## How to Run
+
+Open separate terminals for server and each client.
+
+### 1) Start server
+
+```bash
 cd server-go
 go run auction_server.go
 ```
 
-Expected output:
+You should see:
 
-```
+```text
 Auction Server Started on port 8080
 ```
 
----
+### 2) Start one or more clients
 
-## Step 2 – Start the Java Client
-
-Open another terminal:
-
-```
+```bash
 cd client-java
 javac AuctionClient.java
 java AuctionClient
 ```
 
-Example interaction:
+For each client:
 
-```
-Enter bidder name:
-Alice
+- Enter server host (or leave blank for localhost).
+- Enter bidder name.
+- Enter bid amounts.
 
-Enter bid amount:
-100
+Each client has a background listener thread, so all clients print broadcast updates when a new highest bid is accepted.
 
-Server: NEW_HIGHEST Alice 100
-```
+### 3) Optional: run monitor script
 
----
-
-## Step 3 – Start the Monitoring Script
-
-Open another terminal:
-
-```
+```bash
 cd analytics-python
-python3 monitor.py
+python monitor.py
 ```
 
-Example output:
+Important: monitor.py does not connect to the server.
+It only logs values typed into its own terminal with timestamps.
 
-```
-Auction Monitor Started
-Enter bid amount for logging:
-```
+## Example Flow
 
----
+```text
+Client A bids 100
+Server broadcasts: NEW_HIGHEST Alice 100
 
-# Example Auction Flow
+Client B bids 150
+Server broadcasts: NEW_HIGHEST Bob 150
 
-Client 1:
-
-```
-Alice → 100
-Server → NEW_HIGHEST Alice 100
+Client A bids 120
+Server replies to A: BID_REJECTED HIGHEST Bob 150
 ```
 
-Client 2:
+## Current Limitations
 
-```
-Bob → 150
-Server → NEW_HIGHEST Bob 150
-```
+- Auction state is in-memory only (no database or persistence).
+- No authentication; bidder name is plain text from client input.
+- Java client currently trusts all certificates (good for demo, not for production).
+- monitor.py is not integrated with network events.
 
-Client 1 tries lower bid:
+## Authors
 
-```
-Alice → 120
-Server → BID_REJECTED
-```
-
----
-
-# Performance Testing
-
-The system was tested with multiple concurrent clients.
-
-Test configuration:
-
-* Number of clients: 3–5
-* Concurrent bidding events
-* Secure TLS communication enabled
-
-Results:
-
-* Average response time ≈ 10–15 ms
-* Server handled multiple clients without data inconsistency
-* Bid validation correctly enforced auction rules
-
----
-
-# Failure Handling
-
-The system handles several edge cases:
-
-* Client disconnection
-* Invalid bid values
-* Lower bids than current highest bid
-* Concurrent bid submissions
-
-Example:
-
-```
-Current highest bid = 200
-Client sends = 150
-Server response = BID_REJECTED
-```
-
----
-
-# Security Implementation
-
-All communication between clients and the server is secured using **TLS encryption**.
-
-Self-signed certificates are generated using:
-
-```
-openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.crt -days 365 -nodes
-```
-
-This ensures encrypted communication between auction participants and the server.
-
----
-
-# Conclusion
-
-This project demonstrates the design and implementation of a **secure real-time auction platform** using **socket programming and concurrent server architecture**.
-
-The system successfully supports:
-
-* multiple bidders
-* secure communication
-* real-time bidding updates
-* monitoring and performance evaluation.
-
----
-
-# Author
-
-Om Pattanayak
-Rakshan R
-Ojas Taori
+- Om Pattanayak
+- Rakshan R
+- Ojas Taori
