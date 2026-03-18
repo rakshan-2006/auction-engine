@@ -19,10 +19,16 @@ public class AuctionClient {
         sc.init(null, trustAll, new SecureRandom());
 
         SSLSocketFactory factory = sc.getSocketFactory();
-
-        SSLSocket socket = (SSLSocket) factory.createSocket("localhost", 8080);
-
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+
+        System.out.println("Enter server IP or hostname (leave blank for localhost):");
+        String serverHost = input.readLine();
+        if (serverHost == null || serverHost.trim().isEmpty()) {
+            serverHost = "localhost";
+        }
+
+        SSLSocket socket = (SSLSocket) factory.createSocket(serverHost.trim(), 8080);
+
         BufferedReader server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
