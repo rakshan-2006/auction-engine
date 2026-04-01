@@ -1,0 +1,24 @@
+{"type":"AUCTION_STARTED","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"0001-01-01T00:00:00Z","reason":"startup"}
+{"type":"BID_ACCEPTED","bidder":"Raksh","amount":350,"highestBid":350,"highestBidder":"Raksh","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"2026-03-29T18:16:20.6727456Z"}
+{"type":"ACCEPTED","bidder":"Raksh","amount":350,"highestBid":350,"highestBidder":"Raksh","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"2026-03-29T18:16:20.6727456Z","reason":"Bid accepted"}
+{"type":"BID_ACCEPTED","bidder":"bbb","amount":888,"highestBid":888,"highestBidder":"bbb","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"2026-03-29T18:16:46.8058474Z"}
+{"type":"ACCEPTED","bidder":"bbb","amount":888,"highestBid":888,"highestBidder":"bbb","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"2026-03-29T18:16:46.8058474Z","reason":"Bid accepted"}
+{"type":"REJECTED_LOWER_OR_EQUAL","bidder":"Raksh","amount":350,"highestBid":888,"highestBidder":"bbb","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"2026-03-29T18:17:01.2433568Z","reason":"Bid is not higher than current highest"}
+{"type":"AUCTION_CLOSED","bidder":"bbb","amount":888,"highestBid":888,"highestBidder":"bbb","auctionEndsAt":"2026-03-29T18:18:23.5562129Z","serverReceivedAt":"0001-01-01T00:00:00Z"}
+{"type":"AUCTION_STARTED","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"0001-01-01T00:00:00Z","reason":"startup"}
+{"type":"REJECTED_AUCTION_CLOSED","bidder":"Om","amount":1000,"highestBid":888,"highestBidder":"bbb","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"2026-04-01T04:59:01.4730577Z","reason":"Auction already closed"}
+{"type":"REJECTED_AUCTION_CLOSED","bidder":"Om","amount":1000,"highestBid":888,"highestBidder":"bbb","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"2026-04-01T04:59:04.7427177Z","reason":"Auction already closed"}
+{"type":"REJECTED_AUCTION_CLOSED","bidder":"Raksh","amount":800,"highestBid":888,"highestBidder":"bbb","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"2026-04-01T04:59:07.019183Z","reason":"Auction already closed"}
+{"type":"REJECTED_AUCTION_CLOSED","bidder":"raksh","amount":400,"highestBid":888,"highestBidder":"bbb","auctionEndsAt":"2026-03-29T18:18:23.550948Z","serverReceivedAt":"2026-04-01T04:59:18.9621752Z","reason":"Auction already closed"}
+{"type":"AUCTION_STARTED","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"0001-01-01T00:00:00Z","reason":"startup"}
+{"type":"BID_ACCEPTED","bidder":"Raksh","amount":1000,"highestBid":1000,"highestBidder":"Raksh","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:01:41.8878559Z"}
+{"type":"ACCEPTED","bidder":"Raksh","amount":1000,"highestBid":1000,"highestBidder":"Raksh","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:01:41.8878559Z","reason":"Bid accepted"}
+{"type":"BID_ACCEPTED","bidder":"Om","amount":1500,"highestBid":1500,"highestBidder":"Om","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:01:46.2734111Z"}
+{"type":"ACCEPTED","bidder":"Om","amount":1500,"highestBid":1500,"highestBidder":"Om","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:01:46.2734111Z","reason":"Bid accepted"}
+{"type":"REJECTED_LOWER_OR_EQUAL","bidder":"Raksh","amount":1300,"highestBid":1500,"highestBidder":"Om","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:01:59.159794Z","reason":"Bid is not higher than current highest"}
+{"type":"BID_ACCEPTED","bidder":"Om","amount":99999,"highestBid":99999,"highestBidder":"Om","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:02:07.7628521Z"}
+{"type":"ACCEPTED","bidder":"Om","amount":99999,"highestBid":99999,"highestBidder":"Om","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:02:07.7628521Z","reason":"Bid accepted"}
+{"type":"BID_ACCEPTED","bidder":"Om","amount":100000,"highestBid":100000,"highestBidder":"Om","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:02:37.5300623Z"}
+{"type":"ACCEPTED","bidder":"Om","amount":100000,"highestBid":100000,"highestBidder":"Om","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:02:37.5300623Z","reason":"Bid accepted"}
+{"type":"REJECTED_LOWER_OR_EQUAL","bidder":"Raksh","amount":100000,"highestBid":100000,"highestBidder":"Om","auctionEndsAt":"2026-04-01T05:04:12.2915633Z","serverReceivedAt":"2026-04-01T05:02:37.7262065Z","reason":"Bid is not higher than current highest"}
+{"type":"AUCTION_CLOSED","bidder":"Om","amount":100000,"highestBid":100000,"highestBidder":"Om","auctionEndsAt":"2026-04-01T05:04:12.2998563Z","serverReceivedAt":"0001-01-01T00:00:00Z"}

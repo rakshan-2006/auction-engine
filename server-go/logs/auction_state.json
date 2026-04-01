@@ -1,0 +1,13 @@
+{
+  "auctionId": "20260401-050112",
+  "startTime": "2026-04-01T05:01:12.2915633Z",
+  "endTime": "2026-04-01T05:04:12.2915633Z",
+  "highestBid": 100000,
+  "highestBidder": "Om",
+  "highestBidSeq": 5,
+  "extensionCount": 0,
+  "auctionFinalized": true,
+  "finalizedAt": "2026-04-01T05:04:12.2998563Z",
+  "lastUpdated": "2026-04-01T05:04:12.2998563Z",
+  "winnerAnnouncedAt": "0001-01-01T00:00:00Z"
+}

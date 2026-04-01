@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auction Engine Live Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div class="bg-shape shape-a"></div>
+    <div class="bg-shape shape-b"></div>
+    <main class="shell">
+        <header class="hero">
+            <p class="eyebrow">Multi-Device Real-Time Auction</p>
+            <h1>Live Bid Control Room</h1>
+            <p class="subtitle">Time-critical bidding with fairness, consistency checks, and instant broadcast to every
+                participant.</p>
+        </header>
+
+        <section class="grid">
+            <article class="panel status-panel">
+                <h2>Auction Status</h2>
+                <div class="metric-row">
+                    <span>Current leader</span>
+                    <strong id="leader">None yet</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Highest bid</span>
+                    <strong id="highestBid">0</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Time remaining</span>
+                    <strong id="countdown">--:--</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Extensions applied</span>
+                    <strong id="extensions">0</strong>
+                </div>
+                <div id="statusTag" class="status-tag">Connecting...</div>
+            </article>
+
+            <article class="panel bid-panel">
+                <h2>Place a Bid</h2>
+                <form id="bidForm">
+                    <label for="bidder">Bidder Name</label>
+                    <input id="bidder" type="text" maxlength="32" placeholder="e.g. Om_01" required />
+
+                    <label for="amount">Bid Amount</label>
+                    <input id="amount" type="number" min="1" step="1" placeholder="e.g. 250" required />
+
+                    <button type="submit">Submit Bid</button>
+                </form>
+                <p id="formMessage" class="form-message"></p>
+            </article>
+
+            <article class="panel feed-panel">
+                <h2>Event Feed</h2>
+                <ul id="eventFeed"></ul>
+            </article>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

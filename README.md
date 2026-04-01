@@ -1,86 +1,117 @@
 # Auction Engine
 
-This repository contains a small auction system built with sockets and TLS.
+Auction Engine is now a real-time, multi-device auction system with:
 
-- Go server accepts bids over TLS on port 8080.
-- Java clients connect, send bids, and receive live highest-bid updates.
-- Python script is a simple manual logger for bid values and timestamps.
+- time-critical bid acceptance
+- fairness guarantees for near-closing bids
+- thread-safe concurrent state updates
+- failure-safe state persistence and consistency checks
+- live browser UI plus existing Java TLS clients
 
-## What It Does
+## Core Features
 
-The server keeps two global values in memory:
+### Time-critical bid handling
 
-- current highest bid amount
-- name of the current highest bidder
+- The server stamps each incoming bid with server receive time.
+- Bids are accepted only if they arrive before auction close time.
+- Live countdown is available to browser clients and included in TCP responses.
+- Anti-sniping extension: bids inside the last 15 seconds extend auction end by 20 seconds (up to 6 times).
 
-Each client sends lines in this format:
+### Fairness guarantees
 
-```text
-BID <name> <amount>
-```
+- Single authoritative ordering by server-side sequence numbers.
+- Equal or lower bids are deterministically rejected.
+- Final winner is based on the highest accepted bid before close.
 
-When a new highest bid arrives, the server broadcasts that update to every connected client.
+### Concurrent state updates
+
+- Shared auction state is guarded by a mutex.
+- Broadcast fan-out to Java TCP clients and WebSocket UI clients is done safely.
+- Periodic state sync keeps all web clients aligned.
+
+### Failure handling and consistency checks
+
+- Every event is appended as JSON in `server-go/logs/auction_events.log`.
+- Latest durable state snapshot is stored in `server-go/logs/auction_state.json`.
+- Startup recovery restores previous state from disk.
+- Background consistency loop repairs invalid edge states and finalizes auction when time expires.
+
+## Architecture
+
+- TLS socket server for Java and device clients: `:8080`
+- HTTP + WebSocket server for UI: `:8090`
+- Existing multi-device approach remains intact: any device in LAN can connect using host IP.
 
 ## Project Layout
 
 ```text
 auction-engine/
-        server-go/
-                auction_server.go
-        client-java/
-                AuctionClient.java
-        analytics-python/
-                monitor.py
-        ssl/
-                server.crt
-                server.key
+  server-go/
+    auction_server.go
+    go.mod
+    logs/
+  client-java/
+    AuctionClient.java
+  ui-web/
+    index.html
+    style.css
+    app.js
+  analytics-python/
+    monitor.py
+  ssl/
+    server.crt
+    server.key
 ```
 
 ## Protocol Messages
 
-Server responses currently used by the code:
+### TCP (Java and custom socket clients)
 
-- NEW_HIGHEST <name> <amount>
-        - Sent to all connected clients when a higher bid is accepted.
-- CURRENT_HIGHEST <name> <amount>
-        - Sent to a client when it connects and a highest bid already exists.
-- BID_REJECTED HIGHEST <name> <amount>
-        - Sent to the bidder when bid is not higher than current highest.
-- INVALID_COMMAND
-        - Sent when incoming line does not match expected BID format.
-- INVALID_BID
-        - Sent when amount is not a valid integer.
+Incoming:
 
-## TLS and Certificates
-
-The server runs with TLS and loads cert files from the ssl folder.
-
-If you need to generate new self-signed files:
-
-```bash
-openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.crt -days 365 -nodes
+```text
+BID <name> <amount>
 ```
 
-Run this command inside the ssl folder so files are created in the expected location.
+Outgoing examples:
 
-## How to Run
+- `CURRENT_HIGHEST <name-or-NONE> <amount> <remainingMs>`
+- `NEW_HIGHEST <name> <amount> <auctionEndUnixMs>`
+- `BID_ACCEPTED <name> <amount> <auctionEndUnixMs>`
+- `BID_REJECTED HIGHEST <name> <amount>`
+- `BID_REJECTED <reason>`
+- `AUCTION_CLOSED <winner> <amount>`
+- `INVALID_COMMAND`
+- `INVALID_BID`
 
-Open separate terminals for server and each client.
+### WebSocket (Browser UI)
 
-### 1) Start server
+- `STATE`
+- `NEW_HIGHEST`
+- `BID_ACCEPTED`
+- `BID_REJECTED`
+- `AUCTION_CLOSED`
+
+## Run Instructions
+
+Open separate terminals for server and clients.
+
+### 1) Start the server (Go)
 
 ```bash
 cd server-go
+go mod tidy
 go run auction_server.go
 ```
 
-You should see:
+You should see both listeners:
 
 ```text
-Auction Server Started on port 8080
+Auction Server Started on TLS :8080
+Auction UI Server Started on HTTP :8090
 ```
 
-### 2) Start one or more clients
+### 2) Start Java clients (existing multi-device flow)
 
 ```bash
 cd client-java
@@ -88,43 +119,32 @@ javac AuctionClient.java
 java AuctionClient
 ```
 
-For each client:
-
-- Enter server host (or leave blank for localhost).
+- Enter host/IP of server device (blank uses localhost).
 - Enter bidder name.
-- Enter bid amounts.
+- Enter amounts continuously.
 
-Each client has a background listener thread, so all clients print broadcast updates when a new highest bid is accepted.
+### 3) Open browser UI
 
-### 3) Optional: run monitor script
+On same machine:
+
+- `http://localhost:8090`
+
+On other devices in same network:
+
+- `http://<server-lan-ip>:8090`
+
+### 4) Optional monitor script
 
 ```bash
 cd analytics-python
 python monitor.py
 ```
 
-Important: monitor.py does not connect to the server.
-It only logs values typed into its own terminal with timestamps.
+`monitor.py` remains a manual local logger.
 
-## Example Flow
+## Security Note
 
-```text
-Client A bids 100
-Server broadcasts: NEW_HIGHEST Alice 100
-
-Client B bids 150
-Server broadcasts: NEW_HIGHEST Bob 150
-
-Client A bids 120
-Server replies to A: BID_REJECTED HIGHEST Bob 150
-```
-
-## Current Limitations
-
-- Auction state is in-memory only (no database or persistence).
-- No authentication; bidder name is plain text from client input.
-- Java client currently trusts all certificates (good for demo, not for production).
-- monitor.py is not integrated with network events.
+- Java client currently trusts all certificates for demo simplicity. This is fine for local testing but not production.
 
 ## Authors
 
