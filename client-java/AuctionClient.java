@@ -19,15 +19,34 @@ public class AuctionClient {
         sc.init(null, trustAll, new SecureRandom());
 
         SSLSocketFactory factory = sc.getSocketFactory();
-
-        SSLSocket socket = (SSLSocket) factory.createSocket("localhost", 8080);
-
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+
+        System.out.println("Enter server IP or hostname (leave blank for localhost):");
+        String serverHost = input.readLine();
+        if (serverHost == null || serverHost.trim().isEmpty()) {
+            serverHost = "localhost";
+        }
+
+        SSLSocket socket = (SSLSocket) factory.createSocket(serverHost.trim(), 8080);
+
         BufferedReader server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
         System.out.println("Enter bidder name:");
         String name = input.readLine();
+
+        Thread listenerThread = new Thread(() -> {
+            try {
+                String response;
+                while ((response = server.readLine()) != null) {
+                    System.out.println("Server: " + response);
+                }
+            } catch (IOException e) {
+                System.out.println("Disconnected from server.");
+            }
+        });
+        listenerThread.setDaemon(true);
+        listenerThread.start();
 
         while (true) {
 
@@ -36,10 +55,6 @@ public class AuctionClient {
             String bid = input.readLine();
 
             out.println("BID " + name + " " + bid);
-
-            String response = server.readLine();
-
-            System.out.println("Server: " + response);
         }
     }
 }
